@@ -1,5 +1,6 @@
 package hoyolab
 
+import io.github.bonigarcia.wdm.WebDriverManager
 import org.openqa.selenium.By
 import org.openqa.selenium.JavascriptExecutor
 import org.openqa.selenium.WebDriver
@@ -25,44 +26,81 @@ object Utils {
         }
     }
 
+    fun getDriver(): WebDriver {
+        return when (System.getProperty("browser", "chrome").lowercase()) {
+            "chrome" -> getChromeDriver()
+            "firefox" -> getFirefoxDriver()
+            else -> getChromeDriver()
+        }
+    }
+
     private fun getChromeDriver(): WebDriver {
+        WebDriverManager.chromedriver().setup()
+
         val options = ChromeOptions()
         options.addArguments("--start-maximized")
         options.addArguments("--lang=ru-RU")
+        options.addArguments("--disable-blink-features=AutomationControlled")
+
         return ChromeDriver(options)
     }
 
     private fun getFirefoxDriver(): WebDriver {
+        WebDriverManager.firefoxdriver().setup()
+
         val options = FirefoxOptions()
         options.addPreference("intl.accept_languages", "ru-RU, ru")
+
         return FirefoxDriver(options)
     }
 
-    fun getElementBySelector(driver: WebDriver, selector: By, timeout: Long = 60): WebElement {
+    fun getElementBySelector(
+        driver: WebDriver,
+        selector: By,
+        timeout: Long = 60
+    ): WebElement {
         val wait = WebDriverWait(driver, Duration.ofSeconds(timeout))
         return wait.until(ExpectedConditions.visibilityOfElementLocated(selector))
     }
 
-    fun getClickableElement(driver: WebDriver, selector: By, timeout: Long = 60): WebElement {
+    fun getPresentElement(
+        driver: WebDriver,
+        selector: By,
+        timeout: Long = 60
+    ): WebElement {
+        val wait = WebDriverWait(driver, Duration.ofSeconds(timeout))
+        return wait.until(ExpectedConditions.presenceOfElementLocated(selector))
+    }
+
+    fun getClickableElement(
+        driver: WebDriver,
+        selector: By,
+        timeout: Long = 60
+    ): WebElement {
         val wait = WebDriverWait(driver, Duration.ofSeconds(timeout))
         return wait.until(ExpectedConditions.elementToBeClickable(selector))
     }
 
-    fun waitUntilPageLoads(driver: WebDriver, timeout: Long = 60) {
-        val wait = WebDriverWait(driver, Duration.ofSeconds(timeout))
-        wait.until {
-            (it as JavascriptExecutor)
-                .executeScript("return document.readyState") == "complete"
-        }
-    }
+    fun click(driver: WebDriver, selector: By, timeout: Long = 60) {
+        val element = getClickableElement(driver, selector, timeout)
+        scrollIntoView(driver, element)
 
-    fun click(driver: WebDriver, selector: By) {
-        val element = getClickableElement(driver, selector)
         try {
             element.click()
         } catch (e: Exception) {
-            (driver as JavascriptExecutor).executeScript("arguments[0].click();", element)
+            jsClick(driver, element)
         }
+    }
+
+    fun jsClick(driver: WebDriver, element: WebElement) {
+        (driver as JavascriptExecutor).executeScript("arguments[0].click();", element)
+    }
+
+    fun scrollIntoView(driver: WebDriver, element: WebElement) {
+        (driver as JavascriptExecutor).executeScript(
+            "arguments[0].scrollIntoView({block:'center', inline:'center'});",
+            element
+        )
     }
 
     fun exists(driver: WebDriver, selector: By, timeout: Long = 5): Boolean {
@@ -71,6 +109,16 @@ object Utils {
             true
         } catch (e: Exception) {
             false
+        }
+    }
+
+    fun visible(driver: WebDriver, selector: By): Boolean {
+        return driver.findElements(selector).any {
+            try {
+                it.isDisplayed
+            } catch (e: Exception) {
+                false
+            }
         }
     }
 }

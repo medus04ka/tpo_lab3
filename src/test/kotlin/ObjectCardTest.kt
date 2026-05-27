@@ -1,13 +1,12 @@
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 
 class ObjectCardTest : BaseTest() {
 
     @Test
     fun openCard() {
+        page.openIsolatedZone()
         val card = page.openFirstMarker()
-
         assertTrue(
             card.isVisible(),
             "После нажатия на объект должна открыться карточка объекта"
@@ -16,47 +15,41 @@ class ObjectCardTest : BaseTest() {
 
     @Test
     fun openReallyCard() {
+        page.openIsolatedZone()
         val card = page.openFirstMarker()
-
         assertTrue(
             card.hasDescription(),
-            "В карточке объекта должны отображаться название, категория или изображение"
+            "В карточке объекта должны отображаться название и категория"
+        )
+        assertTrue(
+            card.hasImage(),
+            "В карточке объекта должно отображаться изображение"
         )
     }
-    //TODO: додумать тест
+
     @Test
     fun floorCard() {
+        page.openIsolatedZone()
         val card = page.openFirstMarker()
-
-        assumeTrue(
+        assertTrue(
             card.hasGoToFloorButton(),
-            "У выбранного объекта нет кнопки перехода на соответствующий этаж"
+            "У выбранного объекта должна быть кнопка перехода на соответствующий этаж"
         )
-
         card.goToFloor()
-
         assertTrue(
             page.isMapVisible(),
             "После перехода на соответствующий этаж карта должна оставаться доступной"
         )
     }
-    //TODO: пока не трогала авторизованных
+
     @Test
     fun markedCard() {
-        val card = page.openFirstMarker()
-
-        assumeTrue(
-            card.hasReceived(),
-            "У выбранного объекта нет действия Получено"
-        )
-
+        page.openIsolatedZone()
+        val card = page.openReceivedObjectMarker()
         card.clickReceived()
-
+        val auth = AuthModal(driver)
         assertTrue(
-            page.pageContainsText("Войти") ||
-                    page.pageContainsText("Пароль") ||
-                    page.pageContainsText("учётную запись") ||
-                    page.pageContainsText("Получено"),
+            auth.isVisible(),
             "После нажатия Получено должно открыться окно авторизации или измениться статус объекта"
         )
     }

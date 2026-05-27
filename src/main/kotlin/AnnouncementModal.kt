@@ -18,6 +18,6 @@ class AnnouncementModal(driver: WebDriver) : Page(driver) {
         Utils.exists(driver, TITLE, 20)
 
     fun close() {
-        Utils.click(driver, CLOSE)
+        Utils.click(driver, CLOSE, 20)
     }
 }

@@ -2,19 +2,26 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
 class ZoomTest : BaseTest() {
-    //TODO: дописать (мне лень)
     @Test
     fun zoooom() {
-        val before = page.zoomSliderStyle()
-
-        page.moveZoomSlider()
-
-        val after = page.zoomSliderStyle()
-
+        val beforeZoom = page.currentZoomState()
+        page.zoomIn()
+        val afterZoomIn = page.currentZoomState()
         assertNotEquals(
-            before,
-            after,
-            "При перемещении ползунка масштаб карты должен измениться"
+            beforeZoom,
+            afterZoomIn,
+            "После нажатия на плюс состояние масштаба карты должно измениться"
         )
+        page.zoomOut()
+        val afterZoomOut = page.currentZoomState()
+        assertNotEquals(
+            afterZoomIn,
+            afterZoomOut,
+            "После нажатия на минус состояние масштаба карты должно измениться"
+        )
+        page.zoomOut()
+        page.zoomOut()
+        page.zoomIn()
+        page.zoomIn()
     }
 }

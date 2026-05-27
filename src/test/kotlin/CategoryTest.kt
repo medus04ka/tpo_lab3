@@ -3,7 +3,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 class CategoryTest : BaseTest() {
-//TODO: дописать исключения (мне лень)
     @ParameterizedTest(name = "Category {0} should be visible")
     @ValueSource(
         strings = [
@@ -17,27 +16,42 @@ class CategoryTest : BaseTest() {
         ]
     )
     fun categoryIsReal(category: String) {
+        prepareMapForCategory(category)
         assertTrue(
             page.isCategoryVisible(category),
             "В боковой панели должна отображаться категория $category"
         )
     }
-
     @ParameterizedTest(name = "Category {0} should be clickable")
     @ValueSource(
         strings = [
             "Книги",
-            "Точки интереса",
-            "Противники"
+            "Точки интереса"
         ]
     )
-    //TODO: хуйня тест переделать думаю
-    fun lalalal(category: String) {
+    fun categoryShouldBeClickable(category: String) {
+        prepareMapForCategory(category)
+        assertTrue(
+            page.isCategoryVisible(category),
+            "Перед нажатием категория $category должна быть доступна"
+        )
         page.clickCategory(category)
-
         assertTrue(
             page.isMapVisible(),
             "После выбора категории карта должна оставаться доступной"
         )
+    }
+
+    private fun prepareMapForCategory(category: String) {
+        when (category) {
+            "Противники",
+            "Видимые сундуки" -> {
+                page.changeZone("Эфирные войны")
+            }
+            "Фрагментум",
+            "Сундук-головоломка" -> {
+                page.openBaseZoneDirectly()
+            }
+        }
     }
 }
